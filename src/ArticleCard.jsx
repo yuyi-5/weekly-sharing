@@ -3,10 +3,10 @@ import { Bookmark, Star, CheckCircle, Calendar, RefreshCw, PenLine, Trash2, Hash
 
 const STATUS_LABELS = { unread: '待讀', toshare: '待分享', shared: '已分享' }
 const STATUS_CLASSES = { unread: 'badge-unread', toshare: 'badge-toshare', shared: 'badge-shared' }
-const STATUS_ICONS = { 
-    unread: <Bookmark size={12} strokeWidth={2.5} />, 
-    toshare: <Star size={12} strokeWidth={2.5} />, 
-    shared: <CheckCircle size={12} strokeWidth={2.5} /> 
+const STATUS_ICONS = {
+    unread: <Bookmark size={12} strokeWidth={2.5} />,
+    toshare: <Star size={12} strokeWidth={2.5} />,
+    shared: <CheckCircle size={12} strokeWidth={2.5} />
 }
 
 export const CategoryIcon = ({ name, size = 16, strokeWidth = 2 }) => {
@@ -37,8 +37,9 @@ function getFaviconUrl(url) {
 
 export default function ArticleCard({ article, categories, onEdit, onDelete, onStatusChange }) {
     const [faviconError, setFaviconError] = useState(false)
+    const [isExpanded, setIsExpanded] = useState(false)
     const faviconSrc = getFaviconUrl(article.url)
-    
+
     const categoryInfo = categories?.find(c => c.id === article.category) || { label: '其他', iconName: 'paperclip', colorClass: 'cat-other' }
 
     return (
@@ -79,7 +80,16 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
 
             {/* Description */}
             {article.description && (
-                <p className="card-desc">{article.description}</p>
+                <div
+                    className={`card-desc-wrapper ${isExpanded ? 'expanded' : ''}`}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    title={isExpanded ? '點擊收起' : '點擊展開'}
+                >
+                    <p className="card-desc">
+                        {article.description}
+                    </p>
+                    {!isExpanded && <div className="card-desc-fade" />}
+                </div>
             )}
 
             {/* Tags */}
@@ -95,7 +105,7 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
             <div className="card-footer">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
                     <span className={`badge ${STATUS_CLASSES[article.status] || 'badge-unread'}`}>
-                        {STATUS_ICONS[article.status] || <Bookmark size={12} strokeWidth={2.5} />} 
+                        {STATUS_ICONS[article.status] || <Bookmark size={12} strokeWidth={2.5} />}
                         {STATUS_LABELS[article.status] || '待讀'}
                     </span>
                     <span className={`cat-badge ${categoryInfo.colorClass}`}>
