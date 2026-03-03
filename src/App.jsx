@@ -15,7 +15,7 @@ const STATUS_FILTERS = [
 
 export default function App() {
     const {
-        filtered, counts,
+        filtered, counts, loading,
         categories, addCategory, updateCategory, deleteCategory,
         search, setSearch,
         filterCategory, setFilterCategory,
@@ -25,7 +25,7 @@ export default function App() {
 
     const [modalOpen, setModalOpen] = useState(false)
     const [editingArticle, setEditingArticle] = useState(null)
-    
+
     const [catModalOpen, setCatModalOpen] = useState(false)
     const [editingCat, setEditingCat] = useState(null)
 
@@ -39,8 +39,8 @@ export default function App() {
     function openAddCategory() { setEditingCat(null); setCatModalOpen(true) }
     function openEditCategory(cat, e) {
         e.stopPropagation(); // prevent selecting the category filter
-        setEditingCat(cat); 
-        setCatModalOpen(true) 
+        setEditingCat(cat);
+        setCatModalOpen(true)
     }
     function closeCatModal() { setCatModalOpen(false); setEditingCat(null) }
 
@@ -121,8 +121,8 @@ export default function App() {
                     <div className="sidebar-section">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '10px' }}>
                             <h3>分類</h3>
-                            <button 
-                                onClick={openAddCategory} 
+                            <button
+                                onClick={openAddCategory}
                                 title="新增分類"
                                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                                 <Plus size={14} strokeWidth={2.5} />
@@ -141,10 +141,10 @@ export default function App() {
                                 className={`filter-btn category-item ${filterCategory === c.id ? 'active' : ''}`}
                                 onClick={() => setFilterCategory(c.id)}
                             >
-                                <span className="filter-btn-icon"><CategoryIcon name={c.iconName} size={16} /></span> 
+                                <span className="filter-btn-icon"><CategoryIcon name={c.iconName} size={16} /></span>
                                 <span style={{ flex: 1, textAlign: 'left' }}>{c.label}</span>
-                                <span 
-                                    className="edit-cat-btn" 
+                                <span
+                                    className="edit-cat-btn"
                                     onClick={(e) => openEditCategory(c, e)}
                                     title="編輯分類"
                                 >
@@ -181,8 +181,9 @@ export default function App() {
                 <main className="content-panel">
                     <div className="content-header">
                         <h2>{activeFilterLabel()}</h2>
-                        <span className="result-count">{filtered.length} 篇文章</span>
+                        <span className="result-count">{loading ? '載入中…' : `${filtered.length} 篇文章`}</span>
                     </div>
+
 
                     {filtered.length === 0 ? (
                         <div className="empty-state">
