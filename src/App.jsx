@@ -3,6 +3,7 @@ import { useArticles } from './useArticles'
 import ArticleCard, { CategoryIcon } from './ArticleCard'
 import ArticleModal from './ArticleModal'
 import CategoryModal from './CategoryModal'
+import ConfirmModal from './ConfirmModal'
 import { BookOpen, Library, Search, Plus, ListFilter, Bookmark, Star, CheckCircle, SearchX, Inbox, Folder, Settings2 } from 'lucide-react'
 
 const STATUS_FILTERS = [
@@ -28,6 +29,9 @@ export default function App() {
     const [catModalOpen, setCatModalOpen] = useState(false)
     const [editingCat, setEditingCat] = useState(null)
 
+    const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+    const [articleToDeleteId, setArticleToDeleteId] = useState(null)
+
     function openAdd() { setEditingArticle(null); setModalOpen(true) }
     function openEdit(article) { setEditingArticle(article); setModalOpen(true) }
     function closeModal() { setModalOpen(false); setEditingArticle(null) }
@@ -39,6 +43,23 @@ export default function App() {
         setCatModalOpen(true) 
     }
     function closeCatModal() { setCatModalOpen(false); setEditingCat(null) }
+
+    function openConfirmDelete(id) {
+        setArticleToDeleteId(id)
+        setConfirmModalOpen(true)
+    }
+
+    function closeConfirmDelete() {
+        setConfirmModalOpen(false)
+        setArticleToDeleteId(null)
+    }
+
+    function handleConfirmDelete() {
+        if (articleToDeleteId) {
+            deleteArticle(articleToDeleteId)
+            closeConfirmDelete()
+        }
+    }
 
     function handleSave(data) {
         if (editingArticle) {
@@ -52,11 +73,7 @@ export default function App() {
         if (editingCat) {
             updateCategory(editingCat.id, data)
         } else {
-            addCategory(data.label)
-            // Note: addCategory currently creates a default icon/color inside useArticles. 
-            // We should ideally pass all data. Let's assume addCategory only takes label for now, or we can update useArticles.
-            // Let's call updateCategory immediately if we need iconName, but it's better to modify useArticles. 
-            // For now let's just leave it and modify useArticles to accept data.
+            addCategory(data)
         }
     }
 
@@ -192,7 +209,7 @@ export default function App() {
                                     article={article}
                                     categories={categories}
                                     onEdit={openEdit}
-                                    onDelete={deleteArticle}
+                                    onDelete={openConfirmDelete}
                                     onStatusChange={handleStatusChange}
                                 />
                             ))}
@@ -221,6 +238,17 @@ export default function App() {
                         deleteCategory(id);
                         if (filterCategory === id) setFilterCategory('all');
                     }}
+                />
+            )}
+
+            {/* Confirm Delete Modal */}
+            {confirmModalOpen && (
+                <ConfirmModal
+                    title="刪除文章"
+                    message="確定要刪除此文章嗎？"
+                    onConfirm={handleConfirmDelete}
+                    onCancel={closeConfirmDelete}
+                    confirmText="刪除"
                 />
             )}
         </div>

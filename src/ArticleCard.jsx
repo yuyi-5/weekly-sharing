@@ -119,9 +119,7 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
                         <button
                             className="icon-btn danger"
                             title="刪除"
-                            onClick={() => {
-                                if (confirm(`確定要刪除「${article.title}」嗎？`)) onDelete(article.id)
-                            }}
+                            onClick={() => onDelete(article.id)}
                         >
                             <Trash2 size={14} strokeWidth={2.5} />
                         </button>
