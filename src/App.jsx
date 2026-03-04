@@ -1,10 +1,25 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useArticles } from './useArticles'
 import ArticleCard, { CategoryIcon } from './ArticleCard'
 import ArticleModal from './ArticleModal'
 import CategoryModal from './CategoryModal'
 import ConfirmModal from './ConfirmModal'
 import { BookOpen, Library, Search, Plus, ListFilter, Bookmark, Star, CheckCircle, SearchX, Inbox, Folder, Settings2 } from 'lucide-react'
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableCategoryItem, SortableStatusItem } from './SortableSidebarItem'
 
 const STATUS_FILTERS = [
     { value: 'all', label: '全部狀態', icon: ListFilter },
@@ -33,13 +48,89 @@ export default function App() {
     const [confirmModalOpen, setConfirmModalOpen] = useState(false)
     const [articleToDeleteId, setArticleToDeleteId] = useState(null)
 
+    const [categoryOrder, setCategoryOrder] = useState(() => {
+        const saved = localStorage.getItem('categoryOrder');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [statusOrder, setStatusOrder] = useState(() => {
+        const saved = localStorage.getItem('statusOrder');
+        return saved ? JSON.parse(saved) : STATUS_FILTERS.map(f => f.value);
+    });
+
+    const sortedCategories = useMemo(() => {
+        const sorted = [...categories];
+        sorted.sort((a, b) => {
+            const idxA = categoryOrder.indexOf(a.id);
+            const idxB = categoryOrder.indexOf(b.id);
+            if (idxA === -1 && idxB === -1) return 0;
+            if (idxA === -1) return 1;
+            if (idxB === -1) return -1;
+            return idxA - idxB;
+        });
+        return sorted;
+    }, [categories, categoryOrder]);
+
+    const sortedStatuses = useMemo(() => {
+        const sorted = [...STATUS_FILTERS];
+        sorted.sort((a, b) => {
+            const idxA = statusOrder.indexOf(a.value);
+            const idxB = statusOrder.indexOf(b.value);
+            if (idxA === -1 && idxB === -1) return 0;
+            if (idxA === -1) return 1;
+            if (idxB === -1) return -1;
+            return idxA - idxB;
+        });
+        return sorted;
+    }, [statusOrder]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // Requires 5px of movement before dragging starts
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    function handleDragEndCategories(event) {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            setCategoryOrder((prev) => {
+                const currentOrder = prev.length ? prev : categories.map(c => c.id);
+                // Ensure all categories are in currentOrder before moving
+                const fullOrder = [...new Set([...currentOrder, ...categories.map(c => c.id)])];
+                const oldIndex = fullOrder.indexOf(active.id);
+                const newIndex = fullOrder.indexOf(over.id);
+                const newOrder = arrayMove(fullOrder, oldIndex, newIndex);
+                localStorage.setItem('categoryOrder', JSON.stringify(newOrder));
+                return newOrder;
+            });
+        }
+    }
+
+    function handleDragEndStatuses(event) {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            setStatusOrder((prev) => {
+                const oldIndex = prev.indexOf(active.id);
+                const newIndex = prev.indexOf(over.id);
+                const newOrder = arrayMove(prev, oldIndex, newIndex);
+                localStorage.setItem('statusOrder', JSON.stringify(newOrder));
+                return newOrder;
+            });
+        }
+    }
+
     function openAdd() { setEditingArticle(null); setModalOpen(true) }
     function openEdit(article) { setEditingArticle(article); setModalOpen(true) }
     function closeModal() { setModalOpen(false); setEditingArticle(null) }
 
     function openAddCategory() { setEditingCat(null); setCatModalOpen(true) }
     function openEditCategory(cat, e) {
-        e.stopPropagation(); // prevent selecting the category filter
+        e?.stopPropagation(); // prevent selecting the category filter
         setEditingCat(cat);
         setCatModalOpen(true)
     }
@@ -136,45 +227,52 @@ export default function App() {
                             <span className="filter-btn-icon"><Folder size={16} strokeWidth={2} /></span> 全部分類
                             <span className="filter-count">{counts.all || 0}</span>
                         </button>
-                        {categories.map(c => (
-                            <button
-                                key={c.id}
-                                className={`filter-btn category-item ${filterCategory === c.id ? 'active' : ''}`}
-                                onClick={() => setFilterCategory(c.id)}
+                        
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEndCategories}
+                        >
+                            <SortableContext
+                                items={sortedCategories.map(c => c.id)}
+                                strategy={verticalListSortingStrategy}
                             >
-                                <span className="filter-btn-icon"><CategoryIcon name={c.iconName} size={16} /></span>
-                                <span style={{ flex: 1, textAlign: 'left' }}>{c.label}</span>
-                                <span
-                                    className="edit-cat-btn"
-                                    onClick={(e) => openEditCategory(c, e)}
-                                    title="編輯分類"
-                                >
-                                    <Settings2 size={12} strokeWidth={2} />
-                                </span>
-                                <span className="filter-count">
-                                    {counts[c.id] || 0}
-                                </span>
-                            </button>
-                        ))}
+                                {sortedCategories.map(c => (
+                                    <SortableCategoryItem
+                                        key={c.id}
+                                        category={c}
+                                        activeId={filterCategory}
+                                        onClick={() => setFilterCategory(c.id)}
+                                        onEdit={openEditCategory}
+                                        count={counts[c.id]}
+                                    />
+                                ))}
+                            </SortableContext>
+                        </DndContext>
                     </div>
 
                     <div className="sidebar-section">
                         <h3>狀態</h3>
-                        {STATUS_FILTERS.map(f => {
-                            const Icon = f.icon;
-                            return (
-                                <button
-                                    key={f.value}
-                                    className={`filter-btn ${filterStatus === f.value ? 'active' : ''}`}
-                                    onClick={() => setFilterStatus(f.value)}
-                                >
-                                    <span className="filter-btn-icon"><Icon size={16} strokeWidth={2} /></span> {f.label}
-                                    <span className="filter-count">
-                                        {f.value === 'all' ? counts.all || 0 : counts[f.value] || 0}
-                                    </span>
-                                </button>
-                            );
-                        })}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEndStatuses}
+                        >
+                            <SortableContext
+                                items={sortedStatuses.map(s => s.value)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                {sortedStatuses.map(f => (
+                                    <SortableStatusItem
+                                        key={f.value}
+                                        status={f}
+                                        activeId={filterStatus}
+                                        onClick={() => setFilterStatus(f.value)}
+                                        count={f.value === 'all' ? counts.all : counts[f.value]}
+                                    />
+                                ))}
+                            </SortableContext>
+                        </DndContext>
                     </div>
                 </aside>
 
@@ -184,7 +282,6 @@ export default function App() {
                         <h2>{activeFilterLabel()}</h2>
                         <span className="result-count">{loading ? '' : `${filtered.length} 篇文章`}</span>
                     </div>
-
 
                     {loading ? (
                         <div className="empty-state">
