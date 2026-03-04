@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Bookmark, Star, CheckCircle, Calendar, RefreshCw, PenLine, Trash2, Hash, Palette, Terminal, Paperclip, Folder, Briefcase, Code, PenTool, BookOpen } from 'lucide-react'
 
-const STATUS_LABELS = { unread: '待讀', toshare: '待分享', shared: '已分享' }
-const STATUS_CLASSES = { unread: 'badge-unread', toshare: 'badge-toshare', shared: 'badge-shared' }
+const STATUS_LABELS = { unread: '待閱讀', read: '已閱讀', toshare: '待分享', shared: '已分享' }
+const STATUS_CLASSES = { unread: 'badge-unread', read: 'badge-read', toshare: 'badge-toshare', shared: 'badge-shared' }
 const STATUS_ICONS = {
     unread: <Bookmark size={12} strokeWidth={2.5} />,
+    read: <BookOpen size={12} strokeWidth={2.5} />,
     toshare: <Star size={12} strokeWidth={2.5} />,
     shared: <CheckCircle size={12} strokeWidth={2.5} />
 }
@@ -16,10 +17,10 @@ export const CategoryIcon = ({ name, size = 16, strokeWidth = 2 }) => {
         case 'paperclip': return <Paperclip size={size} strokeWidth={strokeWidth} />;
         case 'folder': return <Folder size={size} strokeWidth={strokeWidth} />;
         case 'briefcase': return <Briefcase size={size} strokeWidth={strokeWidth} />;
-        case 'code': return <Code size={size} strokeWidth={strokeWidth} />;
-        case 'pentool': return <PenTool size={size} strokeWidth={strokeWidth} />;
-        case 'bookopen': return <BookOpen size={size} strokeWidth={strokeWidth} />;
-        default: return <Hash size={size} strokeWidth={strokeWidth} />;
+        case 'code': return <Code size={size} strokeWidth={2.5} />;
+        case 'pentool': return <PenTool size={size} strokeWidth={2.5} />;
+        case 'bookopen': return <BookOpen size={size} strokeWidth={2.5} />;
+        default: return <Hash size={size} strokeWidth={2.5} />;
     }
 }
 
@@ -106,7 +107,7 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
                     <span className={`badge ${STATUS_CLASSES[article.status] || 'badge-unread'}`}>
                         {STATUS_ICONS[article.status] || <Bookmark size={12} strokeWidth={2.5} />}
-                        {STATUS_LABELS[article.status] || '待讀'}
+                        {STATUS_LABELS[article.status] || '待閱讀'}
                     </span>
                     <span className={`cat-badge ${categoryInfo.colorClass}`}>
                         {categoryInfo.label}
@@ -141,8 +142,10 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
 }
 
 function cycleStatus(current) {
-    const order = ['unread', 'toshare', 'shared']
-    return order[(order.indexOf(current) + 1) % order.length]
+    const order = ['unread', 'read', 'toshare', 'shared'];
+    const currentIndex = order.indexOf(current);
+    const nextIndex = (currentIndex + 1) % order.length;
+    return order[nextIndex];
 }
 
 function formatMeetingMonth(ym) {

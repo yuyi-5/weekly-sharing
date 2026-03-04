@@ -8,7 +8,8 @@ import { BookOpen, Library, Search, Plus, ListFilter, Bookmark, Star, CheckCircl
 
 const STATUS_FILTERS = [
     { value: 'all', label: '全部狀態', icon: ListFilter },
-    { value: 'unread', label: '待讀', icon: Bookmark },
+    { value: 'unread', label: '待閱讀', icon: Bookmark },
+    { value: 'read', label: '已閱讀', icon: BookOpen },
     { value: 'toshare', label: '待分享', icon: Star },
     { value: 'shared', label: '已分享', icon: CheckCircle },
 ]

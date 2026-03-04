@@ -32,6 +32,8 @@
   /* Status colors (muted, natural) */
   --unread-bg: #e8eef8;
   --unread-clr: #4a6a9e;
+  --read-bg: #e9ecef; /* Light grey-blue for 'read' status */
+  --read-clr: #495057; /* Darker grey-blue for 'read' status */
   --share-bg: #f5ecd6;
   --share-clr: #8a6430;
   --shared-bg: #e2ede6;
@@ -503,6 +505,11 @@ body {
   color: var(--unread-clr);
 }
 
+.badge-read {
+  background: var(--read-bg);
+  color: var(--read-clr);
+}
+
 .badge-toshare {
   background: var(--share-bg);
   color: var(--share-clr);
@@ -777,6 +784,12 @@ body {
   border-color: var(--unread-clr);
   color: var(--unread-clr);
   background: var(--unread-bg);
+}
+
+.status-option.sel-read {
+  border-color: var(--read-clr);
+  color: var(--read-clr);
+  background: var(--read-bg);
 }
 
 .status-option.sel-toshare {
