@@ -32,8 +32,10 @@
   /* Status colors (muted, natural) */
   --unread-bg: #e8eef8;
   --unread-clr: #4a6a9e;
-  --read-bg: #e9ecef; /* Light grey-blue for 'read' status */
-  --read-clr: #495057; /* Darker grey-blue for 'read' status */
+  --read-bg: #e9ecef;
+  /* Light grey-blue for 'read' status */
+  --read-clr: #495057;
+  /* Darker grey-blue for 'read' status */
   --share-bg: #f5ecd6;
   --share-clr: #8a6430;
   --shared-bg: #e2ede6;
@@ -309,6 +311,22 @@ body {
   font-size: 13.5px;
   max-width: 280px;
   line-height: 1.7;
+}
+
+/* ── Loading Spinner ── */
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Article Grid ── */

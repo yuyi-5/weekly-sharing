@@ -182,11 +182,16 @@ export default function App() {
                 <main className="content-panel">
                     <div className="content-header">
                         <h2>{activeFilterLabel()}</h2>
-                        <span className="result-count">{loading ? '載入中…' : `${filtered.length} 篇文章`}</span>
+                        <span className="result-count">{loading ? '' : `${filtered.length} 篇文章`}</span>
                     </div>
 
 
-                    {filtered.length === 0 ? (
+                    {loading ? (
+                        <div className="empty-state">
+                            <div className="loading-spinner" />
+                            <p style={{ color: 'var(--text-muted)', marginTop: 16 }}>載入中…</p>
+                        </div>
+                    ) : filtered.length === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">
                                 {search ? <SearchX size={48} strokeWidth={1} color="var(--text-muted)" /> : <Inbox size={48} strokeWidth={1} color="var(--text-muted)" />}
