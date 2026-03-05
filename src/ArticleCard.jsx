@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { Bookmark, Star, CheckCircle, Calendar, RefreshCw, PenLine, Trash2, Hash, Palette, Terminal, Paperclip, Folder, Briefcase, Code, PenTool, BookOpen } from 'lucide-react'
+import { useState } from 'react' // Keep useState for faviconError
 
 const STATUS_LABELS = { unread: '待閱讀', read: '已閱讀', toshare: '待分享', shared: '已分享' }
 const STATUS_CLASSES = { unread: 'badge-unread', read: 'badge-read', toshare: 'badge-toshare', shared: 'badge-shared' }
@@ -36,15 +36,14 @@ function getFaviconUrl(url) {
     } catch { return null }
 }
 
-export default function ArticleCard({ article, categories, onEdit, onDelete, onStatusChange }) {
+export default function ArticleCard({ article, categories, onEdit, onDelete, onStatusChange, onViewArticle }) {
     const [faviconError, setFaviconError] = useState(false)
-    const [isExpanded, setIsExpanded] = useState(false)
     const faviconSrc = getFaviconUrl(article.url)
 
     const categoryInfo = categories?.find(c => c.id === article.category) || { label: '其他', iconName: 'paperclip', colorClass: 'cat-other' }
 
     return (
-        <div className="article-card">
+        <div className="article-card" onClick={() => onViewArticle(article)}>
             {/* Header */}
             <div className="card-header">
                 <div className="card-favicon">
@@ -68,11 +67,13 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
                             </span>
                         )}
                     </div>
+                    {/* The title itself should still be a clickable link to the article URL, but clicking the card body will open the modal */}
                     <a
                         className="card-link"
                         href={article.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()} // Prevent card click from firing when clicking title link
                     >
                         <div className="card-title">{article.title}</div>
                     </a>
@@ -81,15 +82,12 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
 
             {/* Description */}
             {article.description && (
-                <div
-                    className={`card-desc-wrapper ${isExpanded ? 'expanded' : ''}`}
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    title={isExpanded ? '點擊收起' : '點擊展開'}
-                >
+                <div className="card-desc-wrapper">
                     <p className="card-desc">
                         {article.description}
                     </p>
-                    {!isExpanded && <div className="card-desc-fade" />}
+                    <div className="card-desc-fade" />
+                    <button className="read-more-btn" onClick={(e) => { e.stopPropagation(); onViewArticle(article); }}>閱讀更多</button>
                 </div>
             )}
 
@@ -103,7 +101,7 @@ export default function ArticleCard({ article, categories, onEdit, onDelete, onS
             )}
 
             {/* Footer */}
-            <div className="card-footer">
+            <div className="card-footer" onClick={(e) => e.stopPropagation()}> {/* Prevent card click from firing when clicking footer actions */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
                     <span className={`badge ${STATUS_CLASSES[article.status] || 'badge-unread'}`}>
                         {STATUS_ICONS[article.status] || <Bookmark size={12} strokeWidth={2.5} />}

@@ -5,7 +5,7 @@ import ArticleModal from './ArticleModal'
 import ArticleViewModal from './ArticleViewModal' // New import
 import CategoryModal from './CategoryModal'
 import ConfirmModal from './ConfirmModal'
-import { BookOpen, Library, Search, Plus, ListFilter, Bookmark, Star, CheckCircle, SearchX, Inbox, Folder, Settings2 } from 'lucide-react'
+import { BookOpen, Library, Search, Plus, ListFilter, Bookmark, Star, CheckCircle, SearchX, Inbox, Folder, Settings2, SlidersHorizontal, X } from 'lucide-react'
 import {
     DndContext,
     closestCenter,
@@ -44,6 +44,7 @@ export default function App() {
     const [editingArticle, setEditingArticle] = useState(null)
 
     const [viewingArticle, setViewingArticle] = useState(null) // For View Article Modal
+    const [filterSheetOpen, setFilterSheetOpen] = useState(false) // For mobile filter bottom sheet
 
     const [catModalOpen, setCatModalOpen] = useState(false)
     const [editingCat, setEditingCat] = useState(null)
@@ -188,29 +189,110 @@ export default function App() {
         return `${cat} · ${st}`
     }
 
+    // Show a badge on the filter icon when any filter is active
+    const hasActiveFilter = filterCategory !== 'all' || filterStatus !== 'all'
+
     return (
         <div className="app-layout">
             {/* ── Header ── */}
             <header className="header">
-                <div className="header-logo">
-                    <div className="logo-icon"><Library size={18} strokeWidth={2.5} color="var(--surface)" /></div>
-                    <h1>KeepShare</h1>
+                <div className="header-row header-row-top">
+                    <div className="header-logo">
+                        <div className="logo-icon"><Library size={18} strokeWidth={2.5} color="var(--surface)" /></div>
+                        <h1>KeepShare</h1>
+                    </div>
+                    <button className="btn-add" onClick={openAdd}>
+                        <Plus size={16} strokeWidth={2.5} /> <span className="btn-add-label">新增文章</span>
+                    </button>
+                </div>
+                <div className="header-row header-row-search">
+                    <div className="header-search">
+                        <span className="search-icon"><Search size={16} strokeWidth={2} /></span>
+                        <input
+                            type="search"
+                            placeholder="搜尋文章標題、描述、標籤…"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+                    </div>
+                    {/* Filter icon — mobile only, lives next to search bar */}
+                    <button
+                        className={`mobile-filter-icon-btn${hasActiveFilter ? ' active' : ''}`}
+                        onClick={() => setFilterSheetOpen(true)}
+                        aria-label="篩選"
+                    >
+                        <SlidersHorizontal size={16} strokeWidth={2} />
+                        {hasActiveFilter && <span className="filter-icon-dot" />}
+                    </button>
                 </div>
 
-                <div className="header-search">
-                    <span className="search-icon"><Search size={16} strokeWidth={2} /></span>
-                    <input
-                        type="search"
-                        placeholder="搜尋文章標題、描述、標籤…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                    />
-                </div>
-
-                <button className="btn-add" onClick={openAdd}>
-                    <Plus size={16} strokeWidth={2.5} /> 新增文章
-                </button>
             </header>
+
+            {/* ── Filter Bottom Sheet (mobile only) ── */}
+            {filterSheetOpen && (
+                <div className="filter-sheet-overlay" onClick={() => setFilterSheetOpen(false)}>
+                    <div className="filter-sheet" onClick={e => e.stopPropagation()}>
+                        <div className="filter-sheet-handle" />
+
+                        <div className="filter-sheet-header">
+                            <span className="filter-sheet-title">篩選條件</span>
+                            <button className="filter-sheet-close" onClick={() => setFilterSheetOpen(false)} aria-label="關閉">
+                                <X size={18} strokeWidth={2} />
+                            </button>
+                        </div>
+
+                        {/* Category section */}
+                        <div className="filter-sheet-section">
+                            <div className="filter-sheet-section-title">分類</div>
+                            <div className="filter-sheet-chips">
+                                <button
+                                    className={`mobile-chip ${filterCategory === 'all' ? 'mobile-chip--active' : ''}`}
+                                    onClick={() => { setFilterCategory('all'); setFilterSheetOpen(false); }}
+                                >
+                                    <Folder size={12} strokeWidth={2.5} /> 全部分類
+                                    <span className="mobile-chip-count">{counts.all || 0}</span>
+                                </button>
+                                {sortedCategories.map(c => (
+                                    <button
+                                        key={c.id}
+                                        className={`mobile-chip ${filterCategory === c.id ? 'mobile-chip--active' : ''}`}
+                                        onClick={() => { setFilterCategory(c.id); setFilterSheetOpen(false); }}
+                                    >
+                                        <CategoryIcon name={c.iconName} size={12} strokeWidth={2.5} />
+                                        {c.label}
+                                        {counts[c.id] != null && <span className="mobile-chip-count">{counts[c.id]}</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Status section */}
+                        <div className="filter-sheet-section">
+                            <div className="filter-sheet-section-title">狀態</div>
+                            <div className="filter-sheet-chips">
+                                {STATUS_FILTERS.map(f => (
+                                    <button
+                                        key={f.value}
+                                        className={`mobile-chip ${filterStatus === f.value ? 'mobile-chip--active' : ''}`}
+                                        onClick={() => { setFilterStatus(f.value); setFilterSheetOpen(false); }}
+                                    >
+                                        <f.icon size={12} strokeWidth={2.5} />
+                                        {f.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            className="filter-sheet-reset"
+                            onClick={() => { setFilterCategory('all'); setFilterStatus('all'); setFilterSheetOpen(false); }}
+                        >
+                            重設篩選
+                        </button>
+                    </div>
+                </div>
+            )}
+
 
             {/* ── Main ── */}
             <div className="main-content">
@@ -288,6 +370,7 @@ export default function App() {
                         <h2>{activeFilterLabel()}</h2>
                         <span className="result-count">{loading ? '' : `${filtered.length} 篇文章`}</span>
                     </div>
+
 
                     {loading ? (
                         <div className="empty-state">

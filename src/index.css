@@ -81,7 +81,31 @@ body {
 .app-layout {
   display: grid;
   grid-template-rows: auto 1fr;
+
+  /* header, filter-bar (mobile), main */
   min-height: 100vh;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Header ── */
@@ -89,7 +113,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(245, 242, 237, 0.88);
+  background: rgba(245, 242, 237, 0.92);
   backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
@@ -97,6 +121,12 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+/* Two-row layout helpers (used on mobile) */
+.header-row {
+  display: contents;
+  /* transparent on desktop — children join flex parent directly */
 }
 
 .header-logo {
@@ -189,6 +219,24 @@ body {
   transform: translateY(-1px);
 }
 
+/* ── Mobile Filter Bar Wrapper ── */
+/* Hidden on desktop (chip bar completely removed) */
+.mobile-filter-bar-wrapper {
+  display: none;
+}
+
+/* Mobile filter icon button — hidden on desktop */
+.mobile-filter-icon-btn {
+  display: none;
+}
+
+/* Header actions flex group */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ── Main ── */
 .main-content {
   display: grid;
@@ -270,6 +318,14 @@ body {
   border-bottom: 1.5px solid var(--border2);
   padding-bottom: 14px;
 }
+
+/* Groups h2 + the mobile filter icon together */
+.content-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 
 .content-header h2 {
   font-family: 'Noto Serif TC', serif;
@@ -1106,18 +1162,317 @@ body {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+
+  /* ── Header: two rows on mobile ── */
   .header {
-    padding: 0 16px;
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
   }
 
+  .header-row {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-row-top {
+    padding: 10px 16px;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .header-row-search {
+    padding: 0 16px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+
   .header-logo h1 {
+    display: block;
+    /* show logo title on mobile */
+  }
+
+  /* Search bar full width on mobile */
+  .header-search {
+    max-width: none;
+    margin: 0;
+    flex: 1;
+  }
+
+  /* btn-add: icon-only pill on mobile */
+  .btn-add {
+    padding: 8px 14px;
+    border-radius: 999px;
+  }
+
+  /* Hide sidebar, show mobile filter bar */
+  .sidebar {
     display: none;
   }
 
   .main-content {
-    padding: 14px 16px;
-    gap: 16px;
+    grid-template-columns: 1fr;
+    padding: 14px 14px;
+    gap: 14px;
+  }
+
+  /* ── Mobile Filter Icon Button (in header) ── */
+  .mobile-filter-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .mobile-filter-icon-btn:hover,
+  .mobile-filter-icon-btn:active {
+    color: var(--accent);
+    background: var(--accent-light);
+    border-color: var(--accent2);
+  }
+
+  .mobile-filter-icon-btn.active {
+    color: var(--accent);
+    background: var(--accent-light);
+    border-color: var(--accent2);
+  }
+
+  .filter-icon-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1.5px solid var(--surface);
+  }
+
+
+
+  /* Scrollable chip list — still needed for chips inside the bottom sheet */
+  .mobile-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 0 10px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobile-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Gradient fade — sits on top of the scrollable area on the right */
+  .mobile-filter-fade {
+    position: absolute;
+    right: 48px;
+    /* width of the more-btn */
+    top: 0;
+    bottom: 0;
+    width: 48px;
+    background: linear-gradient(to right, transparent, var(--surface) 90%);
+    pointer-events: none;
+  }
+
+  /* Sticky ‘more’ / filter button */
+  .mobile-filter-more-btn {
+    flex-shrink: 0;
+    width: 48px;
+    height: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: none;
+    border-left: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .mobile-filter-more-btn:hover,
+  .mobile-filter-more-btn:active {
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .mobile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-sub);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    min-height: 34px;
+  }
+
+  .mobile-chip:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .mobile-chip--active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .mobile-chip-count {
+    background: rgba(90, 122, 94, 0.15);
+    color: var(--accent);
+    border-radius: 99px;
+    padding: 0 5px;
+    font-size: 10.5px;
+  }
+
+  .mobile-chip:not(.mobile-chip--active) .mobile-chip-count {
+    background: var(--surface2);
+    color: var(--text-muted);
+  }
+
+  .mobile-chip-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border2);
+    flex-shrink: 0;
+    margin: 0 2px;
+  }
+
+  /* ── Filter Bottom Sheet ── */
+  .filter-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 42, 38, 0.45);
+    backdrop-filter: blur(6px);
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .filter-sheet {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    padding: 0 20px 32px;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .filter-sheet-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 99px;
+    margin: 12px auto 8px;
+  }
+
+  .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .filter-sheet-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .filter-sheet-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .filter-sheet-section {
+    padding: 16px 0 4px;
+  }
+
+  .filter-sheet-section-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .filter-sheet-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filter-sheet-reset {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border2);
+    background: transparent;
+    color: var(--text-sub);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .filter-sheet-reset:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  /* ── Card touch target improvements ── */
+  .icon-btn {
+    width: 36px;
+    height: 36px;
   }
 
   .article-grid {
@@ -1130,6 +1485,23 @@ body {
 
   .modal {
     padding: 22px;
+    border-radius: 14px;
+  }
+
+  /* Modal icon btn bigger on mobile */
+  .modal-icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    padding: 20px;
     border-radius: 14px;
   }
 }
