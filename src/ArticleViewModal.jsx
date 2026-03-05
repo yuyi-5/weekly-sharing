@@ -29,8 +29,8 @@ export default function ArticleViewModal({ article, categories, onClose, onEdit,
             <div className="modal modal-article-view" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="modal-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className="card-favicon">
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1, minWidth: 0, paddingRight: '16px' }}>
+                        <div className="card-favicon" style={{ flexShrink: 0, marginTop: '2px' }}>
                             {article.url && (
                                 <img
                                     src={`https://www.google.com/s2/favicons?domain=${new URL(article.url).hostname}&sz=64`}
@@ -46,9 +46,9 @@ export default function ArticleViewModal({ article, categories, onClose, onEdit,
                             target="_blank"
                             rel="noopener noreferrer"
                             className="modal-title-link"
+                            title={article.title}
                         >
                             {article.title}
-                            <svg className="modal-title-link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
                         </a>
                     </div>
                     <button className="modal-close" onClick={onClose} aria-label="關閉">

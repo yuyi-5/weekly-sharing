@@ -758,6 +758,7 @@ body {
 .modal-close {
   width: 30px;
   height: 30px;
+  flex-shrink: 0;
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: 8px;
@@ -1047,10 +1048,14 @@ body {
   text-underline-offset: 3px;
   transition: color 0.15s, text-decoration-color 0.15s;
   line-height: 1.4;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  cursor: pointer;
+
+  /* Text Truncation */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .modal-title-link:hover {
@@ -1058,18 +1063,6 @@ body {
   text-decoration-color: var(--accent);
 }
 
-.modal-title-link-icon {
-  flex-shrink: 0;
-  opacity: 0.5;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
-  transition: opacity 0.15s;
-}
-
-.modal-title-link:hover .modal-title-link-icon {
-  opacity: 1;
-}
 
 .modal-article-meta {
   display: flex;
