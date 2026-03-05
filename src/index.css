@@ -445,38 +445,54 @@ body {
 /* Description wrapper with gradient fade */
 .card-desc-wrapper {
   position: relative;
-  cursor: pointer;
-  max-height: 3.6em;
-  /* ~2 lines at 1.7 line-height */
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-desc-wrapper.expanded {
-  max-height: 200px;
+  padding-bottom: 28px;
+  /* Space for the "閱讀更多" button */
 }
 
 .card-desc {
   font-size: 12.5px;
   color: var(--text-sub);
-  line-height: 1.8;
+  line-height: 1.6;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  /* Limit to 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Gradient fade overlay */
 .card-desc-fade {
   position: absolute;
+  bottom: 24px;
+  /* Position above the "閱讀更多" button */
+  left: 0;
+  right: 0;
+  height: 2.5em;
+  background: linear-gradient(to bottom, transparent, var(--surface) 80%);
+  pointer-events: none;
+}
+
+.read-more-btn {
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2.2em;
-  background: linear-gradient(to bottom, transparent, var(--surface));
-  pointer-events: none;
-  transition: opacity 0.25s ease;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 4px 0;
+  display: block;
+  width: 100%;
 }
 
-.card-desc-wrapper:hover .card-desc-fade {
-  opacity: 0;
+.read-more-btn:hover {
+  text-decoration: underline;
 }
 
 .card-tags {
@@ -956,6 +972,119 @@ body {
 .btn-secondary:hover {
   background: var(--surface2);
   color: var(--text);
+}
+
+/* ── Article View Modal ── */
+.modal-article-view {
+  max-width: 740px;
+}
+
+/* Clickable title link in view modal */
+.modal-title-link {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-decoration-color: rgba(90, 122, 94, 0.35);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.modal-title-link:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.modal-title-link-icon {
+  flex-shrink: 0;
+  opacity: 0.5;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+  transition: opacity 0.15s;
+}
+
+.modal-title-link:hover .modal-title-link-icon {
+  opacity: 1;
+}
+
+.modal-article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-article-meta .meta-item,
+.modal-article-meta .meta-item-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.modal-article-content {
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 14.5px;
+  margin-bottom: 24px;
+}
+
+.modal-article-content p {
+  margin-bottom: 16px;
+}
+
+/* Modal footer with icon-only buttons */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.modal-footer-icons {
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.modal-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.modal-icon-btn:hover {
+  background: var(--surface2);
+  color: var(--text-sub);
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
+
+.modal-icon-btn--danger:hover {
+  background: rgba(192, 97, 74, 0.08);
+  color: var(--danger);
+  border-color: rgba(192, 97, 74, 0.2);
 }
 
 /* ── Responsive ── */

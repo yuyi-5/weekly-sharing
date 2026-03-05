@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useArticles } from './useArticles'
 import ArticleCard, { CategoryIcon } from './ArticleCard'
 import ArticleModal from './ArticleModal'
+import ArticleViewModal from './ArticleViewModal' // New import
 import CategoryModal from './CategoryModal'
 import ConfirmModal from './ConfirmModal'
 import { BookOpen, Library, Search, Plus, ListFilter, Bookmark, Star, CheckCircle, SearchX, Inbox, Folder, Settings2 } from 'lucide-react'
@@ -39,8 +40,10 @@ export default function App() {
         addArticle, updateArticle, deleteArticle,
     } = useArticles()
 
-    const [modalOpen, setModalOpen] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false) // For Add/Edit Article Modal
     const [editingArticle, setEditingArticle] = useState(null)
+
+    const [viewingArticle, setViewingArticle] = useState(null) // For View Article Modal
 
     const [catModalOpen, setCatModalOpen] = useState(false)
     const [editingCat, setEditingCat] = useState(null)
@@ -125,8 +128,11 @@ export default function App() {
     }
 
     function openAdd() { setEditingArticle(null); setModalOpen(true) }
-    function openEdit(article) { setEditingArticle(article); setModalOpen(true) }
-    function closeModal() { setModalOpen(false); setEditingArticle(null) }
+    function openEdit(article) { setEditingArticle(article); setModalOpen(true); setViewingArticle(null); } // Close view modal if open
+    function closeModal() { setModalOpen(false); setEditingArticle(null) } // Close add/edit modal
+
+    function openViewArticle(article) { setViewingArticle(article); }
+    function closeViewModal() { setViewingArticle(null); }
 
     function openAddCategory() { setEditingCat(null); setCatModalOpen(true) }
     function openEditCategory(cat, e) {
@@ -227,7 +233,7 @@ export default function App() {
                             <span className="filter-btn-icon"><Folder size={16} strokeWidth={2} /></span> 全部分類
                             <span className="filter-count">{counts.all || 0}</span>
                         </button>
-                        
+
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
@@ -315,6 +321,7 @@ export default function App() {
                                     onEdit={openEdit}
                                     onDelete={openConfirmDelete}
                                     onStatusChange={handleStatusChange}
+                                    onViewArticle={openViewArticle} // New prop for viewing the article
                                 />
                             ))}
                         </div>
@@ -322,13 +329,30 @@ export default function App() {
                 </main>
             </div>
 
-            {/* Article Modal */}
+            {/* Article Modal (for Add/Edit) */}
             {modalOpen && (
                 <ArticleModal
                     article={editingArticle}
                     categories={categories}
                     onClose={closeModal}
                     onSave={handleSave}
+                />
+            )}
+
+            {/* Article View Modal */}
+            {viewingArticle && (
+                <ArticleViewModal
+                    article={viewingArticle}
+                    categories={categories}
+                    onClose={closeViewModal}
+                    onEdit={(articleToEdit) => {
+                        openEdit(articleToEdit);
+                        closeViewModal();
+                    }}
+                    onDelete={(id) => {
+                        openConfirmDelete(id);
+                    }}
+                    onStatusChange={handleStatusChange}
                 />
             )}
 
